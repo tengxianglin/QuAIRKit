@@ -15,12 +15,6 @@ _ignore_file_names = ["quairkit.core.utils", "quairkit.core.intrinsic"]
 # source directory for sphinx
 _sphinx_source_dir = os.path.join(".", "docs", "sphinx_src")
 
-def is_correct_directory():
-    script_path = os.path.abspath(__file__)
-    script_dir = os.path.dirname(script_path)
-    required_file = os.path.join(script_dir, 'docs', 'quairkit')
-    return os.path.exists(required_file)
-
 def _list_quairkit_files(
     path: str = os.path.join(".", "quairkit"),
     base_path: str = "",
@@ -47,15 +41,14 @@ def _list_quairkit_files(
         relative_path = os.path.join(base_path, child).replace(os.path.sep, ".")
 
         if os.path.isdir(child_path):
-            sub_list = _list_quairkit_files(child_path, relative_path, [])
-            if sub_list:  # 仅当子目录非空时才添加
+            if sub_list := _list_quairkit_files(child_path, relative_path, []):
                 file_name_attr_list.append((f"quairkit.{relative_path}", "folder"))
                 file_name_attr_list.extend(sub_list)
         elif child.endswith(".py"):
             file_name_attr_list.append(
                 (f"quairkit.{relative_path.replace('.py', '')}", "python")
             )
-    
+
     file_name_attr_list = [
         sub_array
         for sub_array in file_name_attr_list
@@ -141,15 +134,11 @@ Welcome to {_platform_name}'s documentation!
         file.write(rst_content)
 
 
-def _get_modules_rst(
-    file_list: List[Tuple[str, str]], source_directory: str = _sphinx_source_dir
-):
+def _get_modules_rst(file_list: List[Tuple[str, str]]):
     file_list_copy = file_list.copy()
-    rst_content = ""
-    for item in file_list_copy:
-        if item[0].count(".") == 1:
-            rst_content += f"\n    {item[0]}"
-    return rst_content
+    return "".join(
+        f"\n    {item[0]}" for item in file_list_copy if item[0].count(".") == 1
+    )
 
 
 def _update_conf_py(source_directory: str = _sphinx_source_dir):
@@ -173,7 +162,7 @@ def _update_conf_py(source_directory: str = _sphinx_source_dir):
 import os
 import sys
 
-sys.path.insert(0, os.path.join('..', '..', ''))
+sys.path.insert(0, os.path.join('..', '..'))
 # -- Project information -----------------------------------------------------
 
 project = "{_platform_name}"
@@ -228,21 +217,9 @@ html_theme = "sphinx_immaterial"
 html_title = "QuAIRKit"
 html_short_title = "QuAIRKit"
 build_dir = "api"
-# html_theme_options = {
-#     'navigation_depth': 1,
-# }
 html_theme_options = {
-    'base_url': 'https://quair.github.io/quairkit/',
     'repo_url': 'https://github.com/QuAIR/QuAIRKit',
     'repo_name': 'QuAIRKit',
-    # 'google_analytics_account': 'UA-XXXXX',
-    'html_minify': True,
-    'css_minify': True,
-    'nav_title': 'QuAIRKit API Documentation',
-    # 'logo_icon': '&#xe869',
-    # 'globaltoc_depth': 2,
-    'color_primary': "green",
-    'color_accent': 'indigo',
     "palette": { "primary": "green" }
 }
 html_favicon = '../favicon.svg'
@@ -274,11 +251,10 @@ if __name__ == "__main__":
     _platform_dir_path = os.path.dirname(os.path.dirname(_current_script_path))
 
     _current_working_dir = os.getcwd()
-    if _current_working_dir == _platform_dir_path:
-        result = _list_quairkit_files()
-        os.makedirs(_sphinx_source_dir, exist_ok=True)
-        _update_index_rst(result)
-        _update_function_rst(result)
-        _update_conf_py()
-    else:
+    if _current_working_dir != _platform_dir_path:
         raise SystemExit(f"The current working directory is not {_platform_dir_path}.")
+    result = _list_quairkit_files()
+    os.makedirs(_sphinx_source_dir, exist_ok=True)
+    _update_index_rst(result)
+    _update_function_rst(result)
+    _update_conf_py()
