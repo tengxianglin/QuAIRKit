@@ -19,10 +19,10 @@ jobs:
 
     steps:  
       - name: Checkout  # Step to checkout the repository's code.
-        uses: actions/checkout  # Uses the actions/checkout action to access the repository code.
+        uses: actions/checkout@v4  # Uses the actions/checkout action to access the repository code.
 
-      - name: Setup Pages  # Step to configure GitHub Pages.
-        uses: actions/configure-pages
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
 
       - name: Install dependencies and Generate Documentation  # Step to install dependencies and generate documentation.
         run: |
@@ -30,13 +30,13 @@ jobs:
           ./api.sh
 
       - name: Upload artifact  # Step to upload the built site as an artifact.
-        uses: actions/upload-pages-artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: docs/api
 
       - name: Deploy to GitHub Pages  # Step to deploy to GitHub Pages.
         id: deployment
-        uses: peaceiris/actions-gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
           publish_branch: gh-pages  # Specifies the branch to deploy to.
           github_token: ${{ secrets.GITHUB_TOKEN }}  # Authenticates using a GitHub Token.
