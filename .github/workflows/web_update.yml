@@ -24,10 +24,22 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Install dependencies and Generate Documentation  # Step to install dependencies and generate documentation.
+      - name: Cache pip  # Step to cache pip packages.
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies  # Step to install dependencies.
         run: |
-          chmod +x ./api.sh
-          ./api.sh
+          pip install quairkit sphinx_immaterial
+
+      - name: Generate Sphinx Documentation for API Documentation  # Step to generate Sphinx documentation.
+        run: |
+          python docs/update_quairkit_rst.py
+          sphinx-build -b html docs/sphinx_src docs/api
 
       - name: Upload artifact  # Step to upload the built site as an artifact.
         uses: actions/upload-pages-artifact@v3
